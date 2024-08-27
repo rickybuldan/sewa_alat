@@ -3,7 +3,7 @@
 @section('content')
 <div class="container pt-3 ">
     <div class="row flex justify-center">
-        <div class="w-[600px] rounded bg-gray-50 px-6 pt-8 shadow-lg relative">
+        <div class="w-[600px] rounded bg-gray-50 px-6 pt-8 shadow-lg relative"  id="printableArea">
             <a href="{{ route('admin.riwayat') }}" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M6 18L18 6M6 6l12 12" />
@@ -95,7 +95,7 @@
                     @endif
                 </p>
                 <div class=" border-b border border-dashed"></div>
-
+                <button id="printButton" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Print</button>
             </div>
         </div>
     </div>
@@ -109,6 +109,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const formattedId = idText.padStart(3, '0');
         cell.textContent = formattedId;
     });
+   document.getElementById('printButton').addEventListener('click', function() {
+        printDiv('printableArea');
+    });
+
+    function printDiv(divId) {
+        var printContents = document.getElementById(divId).innerHTML;
+        var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
+    }
 });
 </script>
 @endsection

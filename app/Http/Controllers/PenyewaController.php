@@ -228,6 +228,63 @@ class PenyewaController extends Controller
         return redirect()->route('penyewa.dashboard')->with('success', 'Penyewaan berhasil, menunggu persetujuan admin.');
     }
 
+    public function uploadKontrak(Request $request, $id)
+    {
+        $request->validate([
+            'kontrak' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        ]);
+        $sewa = Sewa::findOrFail($id);
+
+        if ($request->hasFile('kontrak')) {
+            $file = $request->file('kontrak');
+            $filePath = $file->getRealPath();
+            $fileName = $file->getClientOriginalName();
+
+            $disk = Storage::disk('google');
+            $stream = fopen($filePath, 'r+');
+            $disk->writeStream($fileName, $stream);
+
+            // $sewa->kontrak = $fileName;
+
+            // Get the file URL from Google Drive
+            $client = new Google_Client();
+            $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
+            $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
+            $client->refreshToken(env('GOOGLE_DRIVE_REFRESH_TOKEN'));
+    
+            // Create the Drive service
+            $service = new Google_Service_Drive($client);
+    
+            // Create a file metadata instance
+            $fileMetadata = new Google_Service_Drive_DriveFile(['name' => $fileName]);
+    
+            // Upload the file to Google Drive
+            $file = $service->files->create($fileMetadata, [
+                'data' => file_get_contents($filePath),
+                'mimeType' => $file->getMimeType(),
+                'uploadType' => 'multipart'
+            ]);
+    
+            // Generate the URL
+            $fileUrl = "https://drive.google.com/uc?id=" . $file->id;
+    
+            // Set file permissions to public
+            $permission = new \Google\Service\Drive\Permission();
+            $permission->setType('anyone');
+            $permission->setRole('reader');
+            $service->permissions->create($file->id, $permission);
+    
+            // Save the file URL in the database
+            $sewa->kontrak = $fileUrl;
+        }
+
+        $sewa->signed = true;
+        $sewa->save();
+
+        notify()->success('Upload file kontrak berhasil');
+        return redirect()->route('penyewa.dashboard')->with('success', 'Penyewaan berhasil, menunggu persetujuan admin.');
+    }
+
     public function detailSewa($id)
     {
         $sewa = Sewa::with('sewaDetail.alatBerat')->findOrFail($id);

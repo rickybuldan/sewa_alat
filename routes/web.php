@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/sewa/store', [PenyewaController::class, 'sewaStore'])->name('penyewa.sewa.store');
         Route::get('/sewa/payment/{id}', [PenyewaController::class, 'paymentForm'])->name('penyewa.sewa.payment');
         Route::post('/sewa/payment/{id}', [PenyewaController::class, 'paymentStore'])->name('penyewa.sewa.payment.store');
+        Route::post('/sewa/kontrak/{id}', [PenyewaController::class, 'uploadKontrak'])->name('penyewa.sewa.kontrak.store');
         Route::post('/sewa/payment/{id}/batal', [PenyewaController::class, 'cancelSewa'])->name('penyewa.sewa.batal');
         Route::get('/sewa/{id}', [PenyewaController::class, 'detailSewa'])->name('penyewa.sewa.detail');
         Route::get('/sewaAktif', [PenyewaController::class, 'sewaAktif'])->name('penyewa.sewa.aktif');

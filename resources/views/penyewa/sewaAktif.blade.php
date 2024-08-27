@@ -48,6 +48,25 @@
                         <a href="{{ route('penyewa.dashboard') }}" class="btn btn-secondary mt-1 hover:bg-blue-600 px-6 py-2 bg-blue-500 text-white rounded-md">Kembali</a>
                     </div>
                 </form>
+                
+                <form id="uploadKontrak" style="display:none" action="" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="space-y-1">
+                        <div class="border-t border-gray-200 pt-8">
+                            <label for="kontrak" class="block text-sm font-medium text-gray-700 pb-2">File Kontrak</label>
+                            <input type="file" id="kontrak" name="kontrak" required
+                                class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="flex justify-end space-x-4 mt-4">
+                         
+                            <button type="submit"
+                                class="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:bg-indigo-700">Upload</button>
+                        </div>
+                    </div>
+                </form>
+                
             </div>
         </div>
     </div>
@@ -60,14 +79,24 @@
         const alatBeratList = document.getElementById('alat_berat_list');
         const dendaAmount = document.getElementById('denda_amount');
         const dendaTotalElement = document.getElementById('denda_total');
+        const uploadKontrakForm = document.getElementById('uploadKontrak');
         // const buktiDendaElement = document.getElementById('bukti_denda');
-
+        
+       
         sewaIdElement.addEventListener('change', function() {
             const sewaId = this.value;
             alatBeratList.innerHTML = '';
             dendaAmount.textContent = '';
 
             if (sewaId !== '') {
+                setFormAction(sewaId)
+                function setFormAction(sewaId) {
+                    var form = document.getElementById('uploadKontrak');
+                    var actionUrl = '{{ route('penyewa.sewa.kontrak.store', ':id') }}';
+                    actionUrl = actionUrl.replace(':id', sewaId);
+                    form.action = actionUrl;
+                }
+                uploadKontrakForm.style.display = "none"
                 fetch(`/penyewa/sewa/${sewaId}`)
                     .then(response => response.json())
                     .then(data => {
@@ -75,7 +104,7 @@
                         const currentDate = new Date();
                         const endDate = new Date(data.tanggal_akhir);
                         endDate.setDate(endDate.getDate() + 1);
-
+                        
                         let kondisi = '';
                         let statusClass = '';
                         let alasan = '-'
@@ -92,6 +121,13 @@
                         } else if (data.disetujui === 1 && data.disetujui_tolak === 0 && data.disetujui_sewa === 1 && data.disetujui_sewa_tolak === 0 && data.pengembalian === 0 && data.pengembalian_diterima === 0) {
                             kondisi = 'Disetujui';
                             statusClass = 'text-green-500';
+                            
+                            if (!data.signed){
+                                uploadKontrakForm.style.display = "block"
+                            }else{
+                                kondisi = 'Kontrak ttd oleh penyewa';
+                            }
+
                         } else if (data.disetujui === 1 && data.disetujui_tolak === 0 && data.disetujui_sewa === 0 && data.disetujui_sewa_tolak === 1 && data.pengembalian === 0 && data.pengembalian_diterima === 0) {
                             kondisi = 'ditolak sewa';
                             statusClass = 'text-red-500';
@@ -101,7 +137,11 @@
                         } else if (data.disetujui === 1 && data.disetujui_tolak === 0 && data.disetujui_sewa === 1 && data.disetujui_sewa_tolak === 0 && data.pengembalian === 1 && data.pengembalian_diterima === 1) {
                             kondisi = 'pengembalian sudah dikonfirmasi';
                             statusClass = 'text-green-500';
+                        }else{
+                            kondisi = 'Kontrak ttd oleh penyewa';
+                            statusClass = 'text-green-500';
                         }
+                        
 
                         const lateDays = Math.ceil((currentDate - endDate) / (1000 * 60 * 60 * 24));
 
@@ -109,6 +149,7 @@
                             const detail = data.sewa_detail[0];
                             const dendaPerAlat = lateDays > 0 ? lateDays * 1.3 * detail.alat_berat.harga_sewa * detail.jumlah : 0;
                             totalDenda += dendaPerAlat;
+
 
                             const row = document.createElement('div');
                             row.className = 'bg-white dark:bg-gray-800 dark:border-gray-700';

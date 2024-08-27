@@ -146,9 +146,11 @@ class AdminController extends Controller
     public function listSewa()
     {
         $sewa = Sewa::where('disetujui', true)
-                    ->where('disetujui_sewa', false)
-                    ->where('disetujui_sewa_tolak', false)
-                    ->get();
+                ->where('disetujui_sewa', false)
+                ->where('disetujui_sewa_tolak', false)
+                ->orWhere('signed', true)
+                ->get();
+                
         return view('admin.listSewa', compact('sewa'));
     }
     

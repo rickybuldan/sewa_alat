@@ -48,7 +48,11 @@
                         {{ $sewa->tanggal_akhir }}
                     </td>
                     <td class="px-6 py-4">
-                        <a href="{{ route('admin.sewa.detail', $sewa->id) }}" class="px-4 py-2 font-medium text-white bg-blue-500 rounded-md dark:text-blue-500 hover:underline">Detail</a>
+                            @if(!$sewa->signed)
+                                <a href="{{ route('admin.sewa.detail', $sewa->id) }}" class="px-4 py-2 font-medium text-white bg-blue-500 rounded-md dark:text-blue-500 hover:underline">Detail</a>
+                            @else
+                                <a href="{{$sewa->kontrak}}&export=view" target="_blank" class="text-blue-500 hover:text-blue-900 text-right">Lihat kontrak</a>
+                            @endif
                     </td>
                 </tr>
                 @endforeach
