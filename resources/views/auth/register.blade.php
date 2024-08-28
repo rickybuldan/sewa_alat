@@ -158,7 +158,7 @@
                     companyInfo.style.display = 'block';
                 } else {
                     companyInfo.style.display = 'none';
-                    companyInfo.value = 'Perorangan';
+                    companyInfo.value = null;
                 }
             });
         });

@@ -32,32 +32,33 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            // 'nama_perusahaan' => ['required', 'string', 'max:255'],
+            'nama_perusahaan' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
             'name' => $request->name,
-            'nama_perusahaan' => $request->nama_perusahaan ?? "Perorangan",
+            'nama_perusahaan' => $request->nama_perusahaan,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             
         ]);
 
-        // event(new Registered($user));
 
         // Auth::login($user);
         try {
             // Mengirimkan email verifikasi
             $user->sendEmailVerificationNotification();
             Log::info('Email verification sent to: ' . $user->email);
-            return back()->with('status', 'Email verifikasi telah dikirim.');
+            
+            return redirect()->route('verification.notice')->with('status', 'Email verifikasi telah dikirim.');
         } catch (\Exception $e) {
             Log::error('Failed to send email verification: ' . $e->getMessage());
+            return back()->withErrors(['email'=>'Failed '. $e->getMessage()]);
         }
 
-        return redirect()->route('verification.notice');
+
         
     }
 }
