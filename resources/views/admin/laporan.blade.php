@@ -46,8 +46,13 @@
                         {{ $sewa->id }}
                     </td>
                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ $sewa->nama_perusahaan }}
                         
+                        @if($sewa->nama_perusahaan == 'Perorangan')
+                            <span class="bg-blue-500 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded text-white">{{ $sewa->nama_perusahaan }}</span>
+                        
+                        @else
+                            <span class="bg-gray-500 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded text-white">{{ $sewa->nama_perusahaan }}</span>
+                        @endif
                     </th>
                     <td class="px-6 py-4">
                         {{$sewa->nama}}

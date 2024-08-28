@@ -437,7 +437,7 @@ class AdminController extends Controller
     {
         $sewa = Sewa::leftJoin('sewa_detail', 'sewa.id', '=', 'sewa_detail.sewa_id')
             ->leftJoin('alat_berat', 'sewa_detail.alat_berat_id', '=', 'alat_berat.id')
-            ->select('sewa.*', 'sewa_detail.*', 'alat_berat.*')
+            ->select('sewa.*', 'sewa_detail.jumlah', 'alat_berat.nama','alat_berat.harga_sewa')
             ->get();
 
         $today = Carbon::now();
