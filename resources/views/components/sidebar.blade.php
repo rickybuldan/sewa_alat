@@ -1,7 +1,7 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/component/sidebar.css') }}">
 @endpush
-@if (Auth::check() && (Auth::user()->role->name == 'penyewa' || Auth::user()->role->name == 'admin'|| Auth::user()->role->name == 'direktur operasional'))
+@if (Auth::check() && (Auth::user()->role->name == 'penyewa' || Auth::user()->role->name == 'admin'|| Auth::user()->role->name == 'direktur operasional' || Auth::user()->role->name == 'direktur keuangan' ))
 <aside id="logo-sidebar"  class="fixed top-20 left-3 z-40 w-64 h-screen pt-3 rounded-xl transition-transform -translate-x-full bg-white border-custom shadow-custom sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
         <ul class="space-y-2 font-medium">
@@ -105,6 +105,14 @@
                         <span class="flex-1 ms-3 whitespace-nowrap text-custom-392676">Riwayat</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.laporan') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group {{ Route::currentRouteName() == 'penyewa.companyProfile' ? 'sidebar-item-active' : 'text-gray-900' }}">                     
+                        <svg class="w-6 h-6 text-custom-392676 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.03v13m0-13c-2.819-.831-4.715-1.076-8.029-1.023A.99.99 0 0 0 3 6v11c0 .563.466 1.014 1.03 1.007 3.122-.043 5.018.212 7.97 1.023m0-13c2.819-.831 4.715-1.076 8.029-1.023A.99.99 0 0 1 21 6v11c0 .563-.466 1.014-1.03 1.007-3.122-.043-5.018.212-7.97 1.023"/>
+                        </svg>
+                        <span class="flex-1 ms-3 whitespace-nowrap text-custom-392676">Laporan</span>
+                    </a>
+                </li>
             @elseif(Auth::user()->role->name == 'direktur operasional')
                 <li>
                     <a href="{{ route('admin.sewa') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group {{ Route::currentRouteName() == 'penyewa.pengembalian.form' ? 'sidebar-item-active' : 'text-gray-900' }}">                        
@@ -122,7 +130,33 @@
                         <span class="flex-1 ms-3 whitespace-nowrap text-custom-392676">Riwayat</span>
                     </a>
                 </li>
-            @endif   
+                <li>
+                    <a href="{{ route('admin.laporan') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group {{ Route::currentRouteName() == 'penyewa.companyProfile' ? 'sidebar-item-active' : 'text-gray-900' }}">                     
+                        <svg class="w-6 h-6 text-custom-392676 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.03v13m0-13c-2.819-.831-4.715-1.076-8.029-1.023A.99.99 0 0 0 3 6v11c0 .563.466 1.014 1.03 1.007 3.122-.043 5.018.212 7.97 1.023m0-13c2.819-.831 4.715-1.076 8.029-1.023A.99.99 0 0 1 21 6v11c0 .563-.466 1.014-1.03 1.007-3.122-.043-5.018.212-7.97 1.023"/>
+                        </svg>
+                        <span class="flex-1 ms-3 whitespace-nowrap text-custom-392676">Laporan</span>
+                    </a>
+                </li>
+            @elseif(Auth::user()->role->name == 'direktur keuangan')
+                <li>
+                    <a href="{{ route('admin.bayar') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group {{ Route::currentRouteName() == 'penyewa.pengembalian.form' ? 'sidebar-item-active' : 'text-gray-900' }}">                        
+                        <svg class="w-6 h-6 text-custom-392676 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.03v13m0-13c-2.819-.831-4.715-1.076-8.029-1.023A.99.99 0 0 0 3 6v11c0 .563.466 1.014 1.03 1.007 3.122-.043 5.018.212 7.97 1.023m0-13c2.819-.831 4.715-1.076 8.029-1.023A.99.99 0 0 1 21 6v11c0 .563-.466 1.014-1.03 1.007-3.122-.043-5.018.212-7.97 1.023"/>
+                        </svg>
+                        <span class="flex-1 ms-3 whitespace-nowrap text-custom-392676">List Sewa</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.laporan') }}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group {{ Route::currentRouteName() == 'penyewa.companyProfile' ? 'sidebar-item-active' : 'text-gray-900' }}">                     
+                        <svg class="w-6 h-6 text-custom-392676 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.03v13m0-13c-2.819-.831-4.715-1.076-8.029-1.023A.99.99 0 0 0 3 6v11c0 .563.466 1.014 1.03 1.007 3.122-.043 5.018.212 7.97 1.023m0-13c2.819-.831 4.715-1.076 8.029-1.023A.99.99 0 0 1 21 6v11c0 .563-.466 1.014-1.03 1.007-3.122-.043-5.018.212-7.97 1.023"/>
+                        </svg>
+                        <span class="flex-1 ms-3 whitespace-nowrap text-custom-392676">Laporan</span>
+                    </a>
+                </li>
+                
+            @endif    
         </ul>
     </div>
 </aside>

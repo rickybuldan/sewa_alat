@@ -49,7 +49,7 @@
             </header>
 
             <!-- Page Content -->
-            @if (Auth::user()->role->name == 'penyewa' || Auth::user()->role->name == 'admin'|| Auth::user()->role->name == 'direktur operasional')
+            @if (Auth::user()->role->name == 'penyewa' || Auth::user()->role->name == 'admin'|| Auth::user()->role->name == 'direktur operasional' || Auth::user()->role->name == 'direktur keuangan')
                 <main class="pt-16 pl-60 z-10">
                     <div class="mx-auto px-7 py-1 sm:px-6 lg:px-8 ">
                         @yield('content')

@@ -109,7 +109,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const formattedId = idText.padStart(3, '0');
         cell.textContent = formattedId;
     });
-   document.getElementById('printButton').addEventListener('click', function() {
+    
+    document.getElementById('printButton').addEventListener('click', function() {
         printDiv('printableArea');
     });
 

@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sewaAktif/{id}', [AdminController::class, 'showSewaAktif'])->name('admin.sewaAktif.show');
 
         Route::get('/admin/search', [AdminController::class, 'search'])->name('admin.search');
+        Route::get('/laporanPengembalian', [AdminController::class, 'laporanPengembalian'])->name('admin.laporan');
     });
 });
 
