@@ -33,32 +33,31 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'nama_perusahaan' => ['nullable', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'nama_perusahaan' => $request->nama_perusahaan,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            
-        ]);
-
-
-        // Auth::login($user);
         try {
-            // Mengirimkan email verifikasi
+            $user = User::create([
+                'name' => $request->name,
+                'nama_perusahaan' => $request->nama_perusahaan ?? 'Perorangan',
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+
+            Auth::login($user);
+            event(new Registered($user));
+
             $user->sendEmailVerificationNotification();
             Log::info('Email verification sent to: ' . $user->email);
-            
-            return redirect()->route('verification.notice')->with('status', 'Email verifikasi telah dikirim.');
+
+            $request->session()->flash('status', 'Email verifikasi telah dikirim.');
+
+            return redirect()->route('verification.notice');
         } catch (\Exception $e) {
+
             Log::error('Failed to send email verification: ' . $e->getMessage());
-            return back()->withErrors(['email'=>'Failed '. $e->getMessage()]);
+            return back()->withErrors(['email' => 'Failed to send email verification: ' . $e->getMessage()]);
         }
-
-
-        
     }
 }
