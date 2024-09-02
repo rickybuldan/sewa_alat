@@ -40,7 +40,7 @@ class PenyewaController extends Controller
         $alatBerats = AlatBerat::all();
         return view('penyewa.sewa', compact('alatBerats'));
     }
-    
+
     public function sewaStore(Request $request)
     {
         $request->validate([
@@ -59,9 +59,9 @@ class PenyewaController extends Controller
                 'exists:alat_berat,id',
                 function ($attribute, $value, $fail) use ($request) {
                     $alat_berat = AlatBerat::find($value);
-                    $index = (int)str_replace('alat_berat.', '', $attribute);
+                    $index = (int) str_replace('alat_berat.', '', $attribute);
                     $requestedQuantity = $request->jumlah[$index];
-                    
+
                     if ($alat_berat->stok < $requestedQuantity) {
                         notify()->error('Stok tidak mencukupi untuk disewakan.');
                         $fail("Stok {$alat_berat->nama} tidak mencukupi untuk disewakan.");
@@ -90,18 +90,18 @@ class PenyewaController extends Controller
         //     $stream = fopen($filePath, 'r+');
         //     $disk->writeStream($fileName, $stream);
         // }
-    
+
         $tanggal_awal = Carbon::parse($request->tanggal_awal);
         $tanggal_akhir = Carbon::parse($request->tanggal_akhir);
         $hari_sewa = $tanggal_awal->diffInDays($tanggal_akhir) + 1;
-    
+
         if ($hari_sewa < 3) {
             return redirect()->back()->with('warning', 'Minimal sewa 3 hari.');
         }
-    
+
         $sewa = Sewa::create([
             'user_id' => auth()->id(),
-            'nama_perusahaan' =>  auth()->user()->nama_perusahaan,
+            'nama_perusahaan' => auth()->user()->nama_perusahaan,
             'alamat' => $request->alamat,
             'npwp' => $request->npwp,
             'no_telp' => $request->no_telp,
@@ -112,7 +112,7 @@ class PenyewaController extends Controller
             'disetujui' => false,
             'pengembalian' => false,
         ]);
-    
+
         foreach ($request->alat_berat as $index => $alat_berat_id) {
             $alatBerat = AlatBerat::find($alat_berat_id);
             $jumlah = $request->jumlah[$index];
@@ -127,7 +127,7 @@ class PenyewaController extends Controller
             $alatBerat->stok -= $jumlah;
             $alatBerat->save();
         }
-    
+
         return redirect()->route('penyewa.sewa.payment', $sewa->id);
     }
 
@@ -194,29 +194,29 @@ class PenyewaController extends Controller
             $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
             $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
             $client->refreshToken(env('GOOGLE_DRIVE_REFRESH_TOKEN'));
-    
+
             // Create the Drive service
             $service = new Google_Service_Drive($client);
-    
+
             // Create a file metadata instance
             $fileMetadata = new Google_Service_Drive_DriveFile(['name' => $fileName]);
-    
+
             // Upload the file to Google Drive
             $file = $service->files->create($fileMetadata, [
                 'data' => file_get_contents($filePath),
                 'mimeType' => $file->getMimeType(),
                 'uploadType' => 'multipart'
             ]);
-    
+
             // Generate the URL
             $fileUrl = "https://drive.google.com/uc?id=" . $file->id;
-    
+
             // Set file permissions to public
             $permission = new \Google\Service\Drive\Permission();
             $permission->setType('anyone');
             $permission->setRole('reader');
             $service->permissions->create($file->id, $permission);
-    
+
             // Save the file URL in the database
             $sewa->bukti_bayar = $fileUrl;
         }
@@ -227,6 +227,64 @@ class PenyewaController extends Controller
         notify()->success('Penyewaan berhasil, menunggu persetujuan admin');
         return redirect()->route('penyewa.dashboard')->with('success', 'Penyewaan berhasil, menunggu persetujuan admin.');
     }
+
+    public function paymentStoreAgain(Request $request, $id)
+    {
+        $request->validate([
+            'bukti_bayar' => 'required|file|mimes:jpeg,png,jpg',
+        ]);
+        $sewa = Sewa::findOrFail($id);
+
+        if ($request->hasFile('bukti_bayar')) {
+            $file = $request->file('bukti_bayar');
+            $filePath = $file->getRealPath();
+            $fileName = $file->getClientOriginalName();
+
+            $disk = Storage::disk('google');
+            $stream = fopen($filePath, 'r+');
+            $disk->writeStream($fileName, $stream);
+
+            // $sewa->kontrak = $fileName;
+
+            // Get the file URL from Google Drive
+            $client = new Google_Client();
+            $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
+            $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
+            $client->refreshToken(env('GOOGLE_DRIVE_REFRESH_TOKEN'));
+
+            // Create the Drive service
+            $service = new Google_Service_Drive($client);
+
+            // Create a file metadata instance
+            $fileMetadata = new Google_Service_Drive_DriveFile(['name' => $fileName]);
+
+            // Upload the file to Google Drive
+            $file = $service->files->create($fileMetadata, [
+                'data' => file_get_contents($filePath),
+                'mimeType' => $file->getMimeType(),
+                'uploadType' => 'multipart'
+            ]);
+
+            // Generate the URL
+            $fileUrl = "https://drive.google.com/uc?id=" . $file->id;
+
+            // Set file permissions to public
+            $permission = new \Google\Service\Drive\Permission();
+            $permission->setType('anyone');
+            $permission->setRole('reader');
+            $service->permissions->create($file->id, $permission);
+
+            // Save the file URL in the database
+            $sewa->bukti_bayar = $fileUrl;
+        }
+        $sewa->disetujui_tolak = false;
+        $sewa->disetujui = false;
+        $sewa->save();
+
+        notify()->success('Upload file bukti bayar berhasil');
+        return redirect()->route('penyewa.dashboard')->with('success', 'Penyewaan berhasil, menunggu persetujuan admin.');
+    }
+
 
     public function uploadKontrak(Request $request, $id)
     {
@@ -251,29 +309,29 @@ class PenyewaController extends Controller
             $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
             $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
             $client->refreshToken(env('GOOGLE_DRIVE_REFRESH_TOKEN'));
-    
+
             // Create the Drive service
             $service = new Google_Service_Drive($client);
-    
+
             // Create a file metadata instance
             $fileMetadata = new Google_Service_Drive_DriveFile(['name' => $fileName]);
-    
+
             // Upload the file to Google Drive
             $file = $service->files->create($fileMetadata, [
                 'data' => file_get_contents($filePath),
                 'mimeType' => $file->getMimeType(),
                 'uploadType' => 'multipart'
             ]);
-    
+
             // Generate the URL
             $fileUrl = "https://drive.google.com/uc?id=" . $file->id;
-    
+
             // Set file permissions to public
             $permission = new \Google\Service\Drive\Permission();
             $permission->setType('anyone');
             $permission->setRole('reader');
             $service->permissions->create($file->id, $permission);
-    
+
             // Save the file URL in the database
             $sewa->kontrak = $fileUrl;
         }
@@ -295,7 +353,7 @@ class PenyewaController extends Controller
     {
         $userId = auth()->user()->id;
         $sewa = Sewa::where('user_id', $userId)
-                    ->get();
+            ->get();
         return view('penyewa.sewaAktif', compact('sewa'));
     }
 
@@ -303,9 +361,9 @@ class PenyewaController extends Controller
     {
         $userId = auth()->user()->id;
         $sewa = Sewa::where('disetujui_sewa', true)
-                    ->where('pengembalian', false)
-                    ->where('user_id', $userId)
-                    ->get();
+            ->where('pengembalian', false)
+            ->where('user_id', $userId)
+            ->get();
         return view('penyewa.pengembalian', compact('sewa'));
     }
 
@@ -330,29 +388,29 @@ class PenyewaController extends Controller
             $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
             $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
             $client->refreshToken(env('GOOGLE_DRIVE_REFRESH_TOKEN'));
-    
+
             // Create the Drive service
             $service = new Google_Service_Drive($client);
-    
+
             // Create a file metadata instance
             $fileMetadata = new Google_Service_Drive_DriveFile(['name' => $fileName]);
-    
+
             // Upload the file to Google Drive
             $file = $service->files->create($fileMetadata, [
                 'data' => file_get_contents($filePath),
                 'mimeType' => $file->getMimeType(),
                 'uploadType' => 'multipart'
             ]);
-    
+
             // Generate the URL
             $fileUrl = "https://drive.google.com/uc?id=" . $file->id;
-    
+
             // Set file permissions to public
             $permission = new \Google\Service\Drive\Permission();
             $permission->setType('anyone');
             $permission->setRole('reader');
             $service->permissions->create($file->id, $permission);
-    
+
             // Save the file URL in the database
             $sewa->bukti_denda = $fileUrl;
         }
@@ -364,6 +422,6 @@ class PenyewaController extends Controller
         notify()->success('Pengajuan pengembalian berhasil diajukan');
         return redirect()->route('penyewa.pengembalian.form')->with('success', 'Pengajuan pengembalian berhasil diajukan.');
     }
-    
+
 }
 

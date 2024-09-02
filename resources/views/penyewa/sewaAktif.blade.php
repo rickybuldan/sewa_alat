@@ -66,6 +66,30 @@
                         </div>
                     </div>
                 </form>
+
+                <form id="paymentForm" style="display:none;" action="" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="space-y-1">
+
+                        <!-- Bukti Bayar -->
+                        <div class="border-t border-gray-200 pt-8">
+                            <label for="bukti_bayar" class="block text-sm font-medium text-gray-700 pb-2">Bukti
+                                Bayar</label>
+                            <input type="hidden" id="status_reset_tolak" name="status_reset_tolak" value="0">
+                            <input type="file" id="bukti_bayar" name="bukti_bayar" required
+                                class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="flex justify-end space-x-4 mt-4">
+                            <!-- <a href="{{ route('penyewa.dashboard') }}"
+                            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:bg-gray-300">Batal</a> -->
+
+                            <button type="submit"
+                                class="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:bg-indigo-700">Bayar</button>
+                        </div>
+                    </div>
+                </form>
                 
             </div>
         </div>
@@ -80,6 +104,8 @@
         const dendaAmount = document.getElementById('denda_amount');
         const dendaTotalElement = document.getElementById('denda_total');
         const uploadKontrakForm = document.getElementById('uploadKontrak');
+        const paymentForm = document.getElementById('paymentForm');
+        
         // const buktiDendaElement = document.getElementById('bukti_denda');
         
        
@@ -95,8 +121,15 @@
                     var actionUrl = '{{ route('penyewa.sewa.kontrak.store', ':id') }}';
                     actionUrl = actionUrl.replace(':id', sewaId);
                     form.action = actionUrl;
+
+                    var form = document.getElementById('paymentForm');
+                    var actionUrl = '{{ route('penyewa.sewa.payment.store.again', ':id') }}';
+                    actionUrl = actionUrl.replace(':id', sewaId);
+                    form.action = actionUrl;
                 }
                 uploadKontrakForm.style.display = "none"
+                paymentForm.style.display = "none"
+
                 fetch(`/penyewa/sewa/${sewaId}`)
                     .then(response => response.json())
                     .then(data => {
@@ -118,6 +151,7 @@
                             kondisi = 'Ditolak bayar';
                             statusClass = 'text-red-500';
                             alasan = data.alasan
+                            paymentForm.style.display = "block"
                         } else if (data.disetujui === 1 && data.disetujui_tolak === 0 && data.disetujui_sewa === 1 && data.disetujui_sewa_tolak === 0 && data.pengembalian === 0 && data.pengembalian_diterima === 0) {
                             kondisi = 'Disetujui';
                             statusClass = 'text-green-500';
@@ -126,6 +160,7 @@
                                 uploadKontrakForm.style.display = "block"
                             }else{
                                 kondisi = 'Kontrak ttd oleh penyewa';
+                                uploadKontrakForm.style.display = "none"
                             }
 
                         } else if (data.disetujui === 1 && data.disetujui_tolak === 0 && data.disetujui_sewa === 0 && data.disetujui_sewa_tolak === 1 && data.pengembalian === 0 && data.pengembalian_diterima === 0) {
@@ -194,11 +229,11 @@
                                             @endphp
                                             <p class="flex justify-between mb-3">
                                                 <span class="text-gray-400">Tanggal Awal Penyewaan:</span>
-                                                <span>{{ \Carbon\Carbon::parse($sewa->tanggal_awal)->translatedFormat('d F Y') }}</span>
+                                                <span>{{ \Carbon\Carbon::parse($sewa->tanggal_awal)->translatedFormat('l, d F Y') }}</span>
                                             </p>
                                             <p class="flex justify-between mb-3">
                                                 <span class="text-gray-400">Tanggal Akhir Penyewaan:</span>
-                                                <span>{{ \Carbon\Carbon::parse($sewa->tanggal_akhir)->translatedFormat('d F Y') }}</span>
+                                                <span>{{ \Carbon\Carbon::parse($sewa->tanggal_akhir)->translatedFormat('l, d F Y') }}</span>
                                             </p>
                                             <p class="flex justify-between mb-3">
                                                 <span class="text-gray-400 w-full">Keterangan:</span>

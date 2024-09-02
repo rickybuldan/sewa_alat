@@ -36,33 +36,33 @@ class AdminController extends Controller
     }
 
     public function store(Request $request)
-{
-    $validatedData = $request->validate([
-        'nama' => 'required|string|max:255',
-        'merk' => 'required|string|max:255',
-        'kode' => 'required|string|max:255',
-        'gambar' => 'required|image|mimes:jpg,png,jpeg|max:2048',
-        'deskripsi' => 'required|string',
-        'stok' => 'required|integer|min:0',
-        'harga_sewa' => 'required|numeric|min:0',
-    ]);
+    {
+        $validatedData = $request->validate([
+            'nama' => 'required|string|max:255',
+            'merk' => 'required|string|max:255',
+            'kode' => 'required|string|max:255',
+            'gambar' => 'required|image|mimes:jpg,png,jpeg|max:2048',
+            'deskripsi' => 'required|string',
+            'stok' => 'required|integer|min:0',
+            'harga_sewa' => 'required|numeric|min:0',
+        ]);
 
-    // Handle file upload
-    $gambarPath = $request->file('gambar')->store('', 'custom');
+        // Handle file upload
+        $gambarPath = $request->file('gambar')->store('', 'custom');
 
-    $alatBerat = new AlatBerat();
-    $alatBerat->nama = $validatedData['nama'];
-    $alatBerat->merk = $validatedData['merk'];
-    $alatBerat->kode = $validatedData['kode'];
-    $alatBerat->gambar = $gambarPath;
-    $alatBerat->deskripsi = $validatedData['deskripsi'];
-    $alatBerat->stok = $validatedData['stok'];
-    $alatBerat->harga_sewa = $validatedData['harga_sewa'];
-    $alatBerat->save();
+        $alatBerat = new AlatBerat();
+        $alatBerat->nama = $validatedData['nama'];
+        $alatBerat->merk = $validatedData['merk'];
+        $alatBerat->kode = $validatedData['kode'];
+        $alatBerat->gambar = $gambarPath;
+        $alatBerat->deskripsi = $validatedData['deskripsi'];
+        $alatBerat->stok = $validatedData['stok'];
+        $alatBerat->harga_sewa = $validatedData['harga_sewa'];
+        $alatBerat->save();
 
-    notify()->success('Alat berat berhasil ditambahkan');
-    return redirect()->route('admin.dataMaster.show')->with('success', 'Alat berat berhasil ditambahkan.');
-}
+        notify()->success('Alat berat berhasil ditambahkan');
+        return redirect()->route('admin.dataMaster.show')->with('success', 'Alat berat berhasil ditambahkan.');
+    }
 
     public function edit($id)
     {
@@ -74,16 +74,16 @@ class AdminController extends Controller
     {
         $alatBerat = AlatBerat::findOrFail($id);
         $alatBerat->update($request->all());
-    
+
         notify()->success('Data alat berat berhasil diperbarui');
         return redirect()->route('admin.show', $alatBerat->id)->with('success', 'Data alat berat berhasil diperbarui.');
     }
-    
+
     public function destroy($id)
     {
         $alatBerat = AlatBerat::findOrFail($id);
         $alatBerat->delete();
-    
+
         notify()->success('berhasil dihapus');
         return redirect()->route('admin.dataMaster.show')->with('success', 'Alat Berat berhasil dihapus.');
     }
@@ -92,8 +92,8 @@ class AdminController extends Controller
     public function listBayar()
     {
         $sewa = Sewa::where('disetujui', false)
-                    ->where('disetujui_tolak', false)
-                    ->get();
+            ->where('disetujui_tolak', false)
+            ->get();
         return view('admin.listBayar', compact('sewa'));
     }
 
@@ -117,9 +117,9 @@ class AdminController extends Controller
     public function approveBayar($id)
     {
         $sewa = Sewa::findOrFail($id);
-        $sewa->disetujui= true;
+        $sewa->disetujui = true;
         $sewa->save();
-    
+
         notify()->success('Bayar berhasil disetujui');
         return redirect()->route('admin.bayar')->with('success', 'Bayar berhasil disetujui.');
     }
@@ -146,14 +146,14 @@ class AdminController extends Controller
     public function listSewa()
     {
         $sewa = Sewa::where('disetujui', true)
-                ->where('disetujui_sewa', false)
-                ->where('disetujui_sewa_tolak', false)
-                ->orWhere('signed', true)
-                ->get();
-                
+            ->where('disetujui_sewa', false)
+            ->where('disetujui_sewa_tolak', false)
+            ->orWhere('signed', true)
+            ->get();
+
         return view('admin.listSewa', compact('sewa'));
     }
-    
+
     public function detailSewa($id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -172,14 +172,14 @@ class AdminController extends Controller
 
         return view('admin.detailSewa', compact('sewa', 'totalHargaFormatted', 'karyawans', 'kendaraanPengantars'));
     }
-    
+
     public function approveSewa(Request $request, $id)
     {
         $request->validate([
             'karyawan_id' => 'required|exists:karyawan,id',
             'kendaraan_pengantar_id' => 'required|exists:kendaraan_pengantar,id',
             'kontrak' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
-        ]);    
+        ]);
 
         $sewa = Sewa::findOrFail($id);
 
@@ -197,29 +197,29 @@ class AdminController extends Controller
             $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
             $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
             $client->refreshToken(env('GOOGLE_DRIVE_REFRESH_TOKEN'));
-    
+
             // Create the Drive service
             $service = new Google_Service_Drive($client);
-    
+
             // Create a file metadata instance
             $fileMetadata = new Google_Service_Drive_DriveFile(['name' => $fileName]);
-    
+
             // Upload the file to Google Drive
             $file = $service->files->create($fileMetadata, [
                 'data' => file_get_contents($filePath),
                 'mimeType' => $file->getMimeType(),
                 'uploadType' => 'multipart'
             ]);
-    
+
             // Generate the URL
             $fileUrl = "https://drive.google.com/uc?id=" . $file->id;
-    
+
             // Set file permissions to public
             $permission = new \Google\Service\Drive\Permission();
             $permission->setType('anyone');
             $permission->setRole('reader');
             $service->permissions->create($file->id, $permission);
-    
+
             // Save the file URL in the database
             $sewa->kontrak = $fileUrl;
         }
@@ -228,7 +228,7 @@ class AdminController extends Controller
         $sewa->karyawan_id = $request->input('karyawan_id');
         $sewa->kendaraan_pengantar_id = $request->input('kendaraan_pengantar_id');
         $sewa->save();
-    
+
         notify()->success('Sewa berhasil disetujui');
         return redirect()->route('admin.sewa')->with('success', 'Sewa berhasil disetujui.');
     }
@@ -254,8 +254,8 @@ class AdminController extends Controller
     public function pengembalianApproval()
     {
         $pengembalian = Sewa::where('pengembalian', true)
-                                    ->where('pengembalian_diterima', false)
-                                    ->get();
+            ->where('pengembalian_diterima', false)
+            ->get();
 
         return view('admin.pengembalian', compact('pengembalian'));
     }
@@ -285,16 +285,23 @@ class AdminController extends Controller
         $sewa = Sewa::findOrFail($sewa_id);
         $sewa->pengembalian_diterima = true;
         $sewa->save();
-        
-        // Tambahkan stok alat berat yang dikembalikan
+    
+        // Debugging: Periksa apakah status ada
         foreach ($sewa->sewaDetail as $detail) {
+            $status = request("status_{$detail->id}");
+    
             $detail->alatBerat->stok += $detail->jumlah;
             $detail->alatBerat->save();
+    
+            $detail->status_barang = $status;
+            $detail->save();
         }
         
         notify()->success('Pengembalian alat berat berhasil disetujui');
         return redirect()->route('admin.pengembalian.approval')->with('success', 'Pengembalian alat berat berhasil disetujui.');
     }
+    
+
 
     public function showKaryawan()
     {
@@ -306,7 +313,7 @@ class AdminController extends Controller
     {
         return view('admin.createKaryawan');
     }
-    
+
     public function storeKaryawan(Request $request)
     {
         $validatedData = $request->validate([
@@ -342,7 +349,7 @@ class AdminController extends Controller
     {
         return view('admin.createKendaraanPengantar');
     }
-    
+
     public function storeKendaraanPengantar(Request $request)
     {
         $validatedData = $request->validate([
@@ -404,7 +411,7 @@ class AdminController extends Controller
         $users = User::with('role')->get();
         $roles = Role::all();
 
-        return view('admin.showDataMaster', compact('alatBerats', 'karyawans', 'kendaraanPengantars','users', 'roles'));
+        return view('admin.showDataMaster', compact('alatBerats', 'karyawans', 'kendaraanPengantars', 'users', 'roles'));
     }
 
     public function search(Request $request)
@@ -420,15 +427,15 @@ class AdminController extends Controller
         $users = User::with('role')->get();
         $roles = Role::all();
 
-        return view('admin.showDataMaster', compact('alatBerats', 'karyawans', 'kendaraanPengantars','users', 'roles'));
+        return view('admin.showDataMaster', compact('alatBerats', 'karyawans', 'kendaraanPengantars', 'users', 'roles'));
     }
 
     //fitur riwayat
     public function riwayat()
     {
         $riwayat = Sewa::where('pengembalian', true)
-                                    ->where('pengembalian_diterima', true)
-                                    ->get();
+            ->where('pengembalian_diterima', true)
+            ->get();
 
         return view('admin.riwayat', compact('riwayat'));
     }
@@ -437,7 +444,7 @@ class AdminController extends Controller
     {
         $sewa = Sewa::leftJoin('sewa_detail', 'sewa.id', '=', 'sewa_detail.sewa_id')
             ->leftJoin('alat_berat', 'sewa_detail.alat_berat_id', '=', 'alat_berat.id')
-            ->select('sewa.*', 'sewa_detail.jumlah', 'alat_berat.nama','alat_berat.harga_sewa')
+            ->select('sewa.*', 'sewa_detail.jumlah','sewa_detail.status_barang', 'alat_berat.nama', 'alat_berat.harga_sewa')
             ->get();
 
         $today = Carbon::now();
@@ -479,8 +486,8 @@ class AdminController extends Controller
     public function sewaAktif()
     {
         $sewaAktif = Sewa::where('disetujui_sewa', true)
-                                    ->where('pengembalian', false)
-                                    ->get();
+            ->where('pengembalian', false)
+            ->get();
 
         return view('admin.sewaAktif', compact('sewaAktif'));
     }

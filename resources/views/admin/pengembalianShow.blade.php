@@ -33,7 +33,10 @@
                 </p>
                 <p class="flex justify-between">
                     <span class="text-gray-400">Tanggal Penyewaan:</span>
-                    <span>{{ $sewa->tanggal_awal }} s/d {{ $sewa->tanggal_akhir }}</span>
+                     @php
+                        \Carbon\Carbon::setLocale('id');
+                    @endphp
+                    <span>{{ \Carbon\Carbon::parse($sewa->tanggal_awal)->translatedFormat('l, d F Y') }} s/d {{ \Carbon\Carbon::parse($sewa->tanggal_akhir)->translatedFormat('l, d F Y') }}</span>
                 </p>
                 <p class="flex justify-between">
                     <span class="text-gray-400">Karyawan:</span>
@@ -55,52 +58,59 @@
                 @endif
             </div>
             <div class="flex flex-col gap-3 pb-6 pt-2 text-md">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="flex">
-                            <th class="flex-1 py-2 text-left">Alat Berat</th>
-                            <th class="w-20 py-2 text-center">QTY</th>
-                            <th class="w-36 py-2 text-right">Harga</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($sewa->sewaDetail as $detail)
-                        @php
-                            // Convert dates to Carbon instances
-                            $startDate = strtotime($sewa->tanggal_awal);
-                            $endDate = strtotime($sewa->tanggal_akhir);
-                            
-                            // Calculate rental days
-                            $diff = $endDate-$startDate;
-                            $rentalDays = floor($diff/(60*60*24)) + 1;
-                        @endphp
-                        <tr class="flex">
-                            <td class="flex-1 py-1 text-left">{{ $detail->alatBerat->nama }}</td>
-                            <td class="w-20 text-center">{{ $detail->jumlah }}</td>
+                <form action="{{ route('admin.pengembalian.approve', $sewa->id) }}" method="POST">
+                    @csrf
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="flex">
+                                <th class="flex-1 py-2 text-left">Alat Berat</th>
+                                <th class="flex-1 py-2 text-center">QTY</th>
+                                <th class="flex-1 py-2 text-left">Harga</th>
+                                <th class="flex-1 py-2 text-left">Status Barang</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($sewa->sewaDetail as $detail)
                                 @php
+                                    // Convert dates to Carbon instances
+                                    $startDate = strtotime($sewa->tanggal_awal);
+                                    $endDate = strtotime($sewa->tanggal_akhir);
+                                    
+                                    // Calculate rental days
+                                    $diff = $endDate - $startDate;
+                                    $rentalDays = floor($diff / (60 * 60 * 24)) + 1;
+
                                     // Calculate total price per item
                                     $totalPrice = $detail->jumlah * $detail->alatBerat->harga_sewa * $rentalDays;
                                 @endphp
-                            <td class="w-36 text-right ">Rp {{ number_format($totalPrice, 0, ',', '.') }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                <div class=" border-b border "></div>
-                <p class="flex justify-between font-boldest text-base">
-                    @if($denda > 0)
-                        <span class="text-red-500">Denda: Rp {{ number_format($denda, 0, ',', '.') }}</span>
-                    @else
-                        <span class="text-green-500">Tidak ada denda keterlambatan.</span>
-                    @endif
-                </p>
-                <div class=" border-b border border-dashed"></div>
-                <div class="py-4 justify-end items-end flex flex-col gap-2">
-                    <form action="{{ route('admin.pengembalian.approve', $sewa->id) }}" class="hover:text-blue-500" method="POST">
-                        @csrf
+                                <tr class="flex items-center">
+                                    <td class="flex-1 py-1 text-left">{{ $detail->alatBerat->nama }}</td>
+                                    <td class="flex-1 py-1 text-center">{{ $detail->jumlah }}</td>
+                                    <td class="flex-1 py-1 text-left">Rp {{ number_format($totalPrice, 0, ',', '.') }}</td>
+                                    <td class="flex-1 py-1 text-left">
+                                        <select name="status_{{ $detail->id }}" required class="border border-gray-300 rounded px-2 py-1 w-full bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="baik">Baik</option>
+                                            <option value="rusak sedang">Kerusakan Sedang</option>
+                                            <option value="rusak parah">Rusak</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <div class=" border-b border "></div>
+                    <p class="flex justify-between font-boldest text-base">
+                        @if($denda > 0)
+                            <span class="text-red-500">Denda: Rp {{ number_format($denda, 0, ',', '.') }}</span>
+                        @else
+                            <span class="text-green-500">Tidak ada denda keterlambatan.</span>
+                        @endif
+                    </p>
+                    <div class=" border-b border border-dashed"></div>
+                    <div class="py-4 justify-end items-end flex flex-col gap-2">
                         <button type="submit" class="btn btn-success text-white bg-green-500 rounded-md px-3 py-2">Konfirmasi</button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

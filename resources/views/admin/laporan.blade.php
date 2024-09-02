@@ -21,6 +21,9 @@
                         Alat Berat
                     </th>
                     <th scope="col" class="px-6 py-3">
+                        Status Alat
+                    </th>
+                    <th scope="col" class="px-6 py-3">
                         Jumlah
                     </th>
 
@@ -55,7 +58,26 @@
                         @endif
                     </th>
                     <td class="px-6 py-4">
-                        {{$sewa->nama}}
+                        {{$sewa->nama}} 
+                    </td>
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        @if($sewa->status_barang == 'rusak sedang')
+                            <span class="bg-yellow-400 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded text-white">
+                                Rusak Sedang
+                            </span>
+                        @elseif($sewa->status_barang == 'baik')
+                            <span class="bg-green-500 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded text-white"">
+                                Baik
+                            </span>
+                        @elseif($sewa->status_barang == 'rusak parah')
+                            <span class="bg-red-500 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded text-white"">
+                                Rusak Parah
+                            </span>
+                        @else
+                            <span class="bg-gray-500 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded text-white"">
+                                Status Tidak Diketahui
+                            </span>
+                        @endif
                     </td>
                     <td class="px-6 py-4 text-center">
                         {{$sewa->jumlah}}
